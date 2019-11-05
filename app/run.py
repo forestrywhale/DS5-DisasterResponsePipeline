@@ -2,6 +2,7 @@ import json
 import plotly
 import joblib
 import pandas as pd
+import numpy as np
 
 from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
@@ -33,7 +34,6 @@ df = pd.read_sql_table('clean_msg', engine)
 # load model
 model = joblib.load("../models/classifier.pkl")
 
-
 # index webpage displays cool visuals and receives user input text for model
 @app.route('/')
 @app.route('/index')
@@ -43,6 +43,10 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
+
+    # looking at the length for original msg
+    msg_lengths = df['original'].str.split().str.len()
+    msg_length_counts, msg_length_bins = np.histogram(msg_lengths,  range=(0, msg_lengths.quantile(1)))
 
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
@@ -64,8 +68,23 @@ def index():
                     'title': "Genre"
                 }
             }
+        },
+
+        # graph 2
+        {
+            'data':[
+                Bar(x = msg_length_counts, y = msg_length_bins[1:-1])
+            ],
+            'layout':{
+                'title': 'Distribution of Message Length',
+                'yaxis': {'title': 'Counts'},
+                'xaxis': {'title': 'Message Length'}
+            }
         }
     ]
+
+    # a second graph for the webpage.
+
 
     # encode plotly graphs in JSON
     ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]
