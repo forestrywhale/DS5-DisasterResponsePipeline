@@ -2,7 +2,7 @@ import sys
 import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
-import pickle
+import joblib
 import string
 
 import nltk
@@ -38,7 +38,8 @@ def load_data(database_filepath):
     df = pd.read_sql("clean_msg", engine)
     X = df['message']
     y = df.drop(['message', 'genre', 'id', 'original'], axis=1)
-    print(y.head(10))
+    y=y.astype(int)
+    #print(y.head(10))
 
     category_names = y.columns
     return X, y, category_names
@@ -121,8 +122,7 @@ def save_model(model, model_filepath):
     Returns:
         None
     """
-    with open("%s"%model_filepath, 'wb') as pickle_file:
-        pickle.dump(model, pickle_file)
+    joblib.dump(model, model_filepath)
 
 
 def main():
